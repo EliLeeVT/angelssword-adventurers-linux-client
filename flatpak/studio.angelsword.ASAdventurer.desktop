@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=AS Adventurer
+GenericName=VTuber Expression Overlay
+Comment=Real-time GIFtuber overlay for OBS — face tracking, mic, and emotes
+Exec=as-adventurer
+Icon=studio.angelsword.ASAdventurer
+Terminal=false
+Categories=AudioVideo;Graphics;Network;
+Keywords=vtuber;gif;overlay;obs;streaming;face;tracking;
+StartupNotify=true
+StartupWMClass=ASAdventurer
+X-Flatpak-Tags=streaming;vtuber;

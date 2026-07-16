@@ -1,0 +1,10 @@
+SHA256 Checksum for ASAdventurer.exe
+============================================
+
+ea30884b83db78f270191ed862846479bc7216176b2387cc717681e3bc08b150
+
+To verify on Windows, open PowerShell and run:
+  Get-FileHash ASAdventurer.exe -Algorithm SHA256
+
+The hash should match the value above exactly.
+If it doesn't, you may have a tampered copy — download only from official sources.

@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Logs / runtime
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Flatpak build artifacts (rebuild with ./flatpak/build.sh)
+flatpak/build/
+flatpak/repo/
+flatpak/dist/
+flatpak/cache/
+flatpak/.flatpak-builder/
+flatpak/**/*.flatpak
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*~
+
+# Optional: keep the Windows .exe out of git and attach it to Releases instead
+# (uncomment if the binary is too large for your preference)
+# ASAdventurer.exe

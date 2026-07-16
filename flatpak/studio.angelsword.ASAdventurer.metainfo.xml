@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>studio.angelsword.ASAdventurer</id>
+  <name>AS Adventurer</name>
+  <summary>Real-time GIFtuber / expression overlay for OBS</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <developer_name>Angel's Sword Studios</developer_name>
+  <description>
+    <p>
+      AS Adventurer is a real-time streaming overlay that switches character
+      animations based on facial tracking and voice detection. Designed for
+      OBS Studio browser sources.
+    </p>
+    <p>
+      Features include multi-model support, nested emotes, VTube Studio and
+      iFacialMocap UDP tracking, webcam (MediaPipe) tracking, and microphone
+      speaking/typing detection.
+    </p>
+  </description>
+  <launchable type="desktop-id">studio.angelsword.ASAdventurer.desktop</launchable>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Graphics</category>
+  </categories>
+  <keywords>
+    <keyword>vtuber</keyword>
+    <keyword>obs</keyword>
+    <keyword>overlay</keyword>
+    <keyword>streaming</keyword>
+  </keywords>
+  <url type="homepage">https://localhost</url>
+  <provides>
+    <binary>as-adventurer</binary>
+  </provides>
+  <releases>
+    <release version="1.0.0" date="2026-07-15">
+      <description>
+        <p>Initial Linux Flatpak release (Node port of the Windows client).</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+</component>

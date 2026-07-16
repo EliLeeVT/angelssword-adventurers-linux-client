@@ -14,9 +14,9 @@ git add .
 git status   # confirm node_modules/ and flatpak/build* are NOT listed
 git commit -m "Initial Linux port of AS Adventurer"
 
-# Create an empty repo on GitHub (e.g. as-adventurer-linux), then:
+# Remote is already set for this project:
+#   git@github.com:EliLeeVT/angelssword-adventurers-linux-client.git
 git branch -M main
-git remote add origin git@github.com:YOUR_USER/as-adventurer-linux.git
 git push -u origin main
 ```
 

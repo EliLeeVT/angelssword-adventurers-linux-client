@@ -32,8 +32,8 @@ flatpak run studio.angelsword.ASAdventurer
 ### Linux from source
 
 ```bash
-git clone <this-repo-url>
-cd as-adventurer   # or whatever the folder is named
+git clone https://github.com/EliLeeVT/angelssword-adventurers-linux-client.git
+cd angelssword-adventurers-linux-client
 ./start.sh         # installs npm deps if needed, starts the server
 ```
 

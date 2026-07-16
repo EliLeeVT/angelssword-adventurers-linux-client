@@ -1,4 +1,4 @@
-# 🎭 AS Adventurer
+# 🎭 Angel's Sword: Adventurers
 
 A real-time streaming overlay that changes character expressions based on
 **facial tracking** and **voice detection**. Designed for OBS Studio.

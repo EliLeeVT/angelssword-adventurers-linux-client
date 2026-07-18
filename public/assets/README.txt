@@ -29,6 +29,32 @@ For multiple models:
       neutral_idle.webm
       ...
 
+IMPORTANT — exact file names
+============================
+Expression files MUST use these base names (extensions: .webm .mp4 .png .webp .gif):
+  neutral_idle, neutral_speaking, happy_idle, happy_speaking,
+  sad_idle, sad_speaking, surprised_idle, surprised_speaking,
+  eyes_closed, typing (optional)
+
+Custom names like "my_char_happy.webm" will NOT be detected unless you also
+add a symlink or copy named happy_idle.webm (etc.).
+
+FLATPAK vs source
+=================
+- Running from source (./start.sh): put models in this public/assets/ folder.
+- Running the Flatpak: the app bundle is read-only. Personal models should NOT
+  be rebuilt into the public Flatpak. Use source install for custom models, or
+  place them under (if your build supports user assets):
+    ~/.var/app/studio.angelsword.ASAdventurer/data/as-adventurer/assets/
+
+PERSONAL models (do not publish)
+================================
+Folders gitignored / skipped from Flatpak:
+  assets/Elijah/      — example personal model
+  assets/_personal/   — drop any private models here
+  assets/_local/      — same
+
+
 EMOTES (optional)
 =================
   assets/MyCharacter/emotes/

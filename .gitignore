@@ -24,3 +24,8 @@ flatpak/**/*.flatpak
 # Optional: keep the Windows .exe out of git and attach it to Releases instead
 # (uncomment if the binary is too large for your preference)
 # ASAdventurer.exe
+
+# Personal / custom models (never ship in the public repo or Flatpak)
+public/assets/Elijah/
+public/assets/_personal/
+public/assets/_local/

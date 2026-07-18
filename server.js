@@ -15,6 +15,7 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const dgram = require('dgram');
 const { WebSocketServer } = require('ws');
 
@@ -26,6 +27,15 @@ const ROOT = (process.pkg
   : __dirname);
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const ASSETS_DIR = path.join(PUBLIC_DIR, 'assets');
+// Extra models outside the app bundle (works with Flatpak after rebuild,
+// and with source installs). Flatpak: ~/.var/app/<id>/data/as-adventurer/assets
+// Host/source: ~/.local/share/as-adventurer/assets or ASSETS_EXTRA=
+const USER_ASSETS_DIR = process.env.ASSETS_EXTRA
+  || path.join(
+    process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share'),
+    'as-adventurer',
+    'assets'
+  );
 
 // ── Ports ──────────────────────────────────────────
 const PREFERRED_PORT = parseInt(process.env.PORT, 10) || 3000;
@@ -104,12 +114,35 @@ function findFile(dir, baseName, extensions) {
 }
 
 function toPublicUrl(absPath) {
-  const rel = path.relative(PUBLIC_DIR, absPath).split(path.sep).join('/');
-  return '/' + rel.split('/').map(encodeURIComponent).join('/');
+  const encodeRel = (rel) => rel.split(path.sep).map(encodeURIComponent).join('/');
+
+  const relPublic = path.relative(PUBLIC_DIR, absPath);
+  if (relPublic && !relPublic.startsWith('..') && !path.isAbsolute(relPublic)) {
+    return '/' + encodeRel(relPublic);
+  }
+
+  const relUser = path.relative(USER_ASSETS_DIR, absPath);
+  if (relUser && !relUser.startsWith('..') && !path.isAbsolute(relUser)) {
+    return '/assets/' + encodeRel(relUser);
+  }
+
+  // Last resort
+  return '/' + encodeRel(path.relative(PUBLIC_DIR, absPath));
 }
 
 function uniqueUrls(list) {
   return [...new Set(list.filter(Boolean))];
+}
+
+function assetSearchRoots() {
+  const roots = [];
+  if (fs.existsSync(ASSETS_DIR)) roots.push(ASSETS_DIR);
+  ensureDir(USER_ASSETS_DIR);
+  if (path.resolve(USER_ASSETS_DIR) !== path.resolve(ASSETS_DIR) &&
+      fs.existsSync(USER_ASSETS_DIR)) {
+    roots.push(USER_ASSETS_DIR);
+  }
+  return roots;
 }
 
 function scanVariants(dir, baseName, extensions) {
@@ -131,47 +164,55 @@ function scanSoundVariants(dir, baseName) {
 
 // ── Model / asset scanning ─────────────────────────
 function listModelDirs() {
-  ensureDir(ASSETS_DIR);
-  const models = [];
-  let entries;
-  try {
-    entries = fs.readdirSync(ASSETS_DIR, { withFileTypes: true });
-  } catch (e) {
-    console.warn('[models] Could not scan asset directories:', e.message);
-    return models;
+  const byName = new Map(); // later roots override earlier (user can override bundled)
+
+  for (const root of assetSearchRoots()) {
+    let entries;
+    try {
+      entries = fs.readdirSync(root, { withFileTypes: true });
+    } catch (e) {
+      console.warn('[models] Could not scan asset directories:', root, e.message);
+      continue;
+    }
+
+    // Flat assets in a root → "Default" (prefer bundled public assets root)
+    const rootAssets = scanModelAssets(root, null);
+    const rootCount = Object.keys(rootAssets).filter(k => !k.startsWith('_')).length;
+    if (rootCount > 0 && root === ASSETS_DIR) {
+      byName.set('Default', { name: 'Default', assetCount: rootCount, dir: root });
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name.startsWith('.') || entry.name === 'emotes') continue;
+      const dir = path.join(root, entry.name);
+      const assets = scanModelAssets(dir, entry.name);
+      const count = Object.keys(assets).filter(k => !k.startsWith('_')).length;
+      byName.set(entry.name, { name: entry.name, assetCount: count, dir });
+    }
   }
 
-  // Flat assets in assets/ root → "Default"
-  const rootAssets = scanModelAssets(ASSETS_DIR, null);
-  const rootCount = Object.keys(rootAssets).filter(k => !k.startsWith('_')).length;
-  if (rootCount > 0) {
-    models.push({ name: 'Default', assetCount: rootCount, dir: ASSETS_DIR });
-  }
-
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    if (entry.name.startsWith('.') || entry.name === 'emotes') continue;
-    const dir = path.join(ASSETS_DIR, entry.name);
-    const assets = scanModelAssets(dir, entry.name);
-    const count = Object.keys(assets).filter(k => !k.startsWith('_')).length;
-    models.push({ name: entry.name, assetCount: count, dir });
-  }
-  return models;
+  return [...byName.values()];
 }
 
 function getModelDir(modelName) {
   if (!modelName || modelName === 'Default') {
-    // Prefer a named Default folder if present, else assets root
-    const named = path.join(ASSETS_DIR, 'Default');
-    if (fs.existsSync(named) && fs.statSync(named).isDirectory()) return named;
+    for (const root of assetSearchRoots()) {
+      const named = path.join(root, 'Default');
+      if (fs.existsSync(named) && fs.statSync(named).isDirectory()) return named;
+    }
     return ASSETS_DIR;
   }
   // Prevent path traversal
   const base = path.basename(modelName);
   if (base !== modelName || modelName.includes('..')) return null;
-  const dir = path.join(ASSETS_DIR, base);
-  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return null;
-  return dir;
+  // Prefer user extra assets, then bundled (search order reversed)
+  const roots = assetSearchRoots().slice().reverse();
+  for (const root of roots) {
+    const dir = path.join(root, base);
+    if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) return dir;
+  }
+  return null;
 }
 
 function scanModelAssets(dir, modelName) {
@@ -651,7 +692,10 @@ const app = express();
 const server = http.createServer(app);
 
 ensureDir(ASSETS_DIR);
+ensureDir(USER_ASSETS_DIR);
 app.use(express.static(PUBLIC_DIR));
+// User-added models (e.g. ~/.local/share/as-adventurer/assets or Flatpak data dir)
+app.use('/assets', express.static(USER_ASSETS_DIR));
 app.use(express.json({ limit: '16kb' }));
 
 // Models

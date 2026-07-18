@@ -70,3 +70,7 @@ modules:
           - flatpak/repo
           - flatpak/dist
           - flatpak/.flatpak-builder
+          # Personal models — not for public Flatpak builds
+          - public/assets/Elijah
+          - public/assets/_personal
+          - public/assets/_local
